@@ -38,7 +38,7 @@ class SigmoidPolynomial:
     def evaluate(self, x):
         """Return sigmoid(polynomial(x))."""
         z = self._poly(x)
-        return 1 / (1 + math.exp(z))
+        return 2 / (1 + math.exp(z))   # range from 0 to 1 when z is positive
     
 
 #ob=SigmoidPolynomial(degree=2, coeff_min=0.1, coeff_max=1.0)

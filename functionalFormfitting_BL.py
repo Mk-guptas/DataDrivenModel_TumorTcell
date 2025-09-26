@@ -119,7 +119,7 @@ def multi_start_combined_fitting(x,mu_x,t, model_name,experimental_time,training
         bounds: Tuple[Tuple[float, float], ...] = (
             (0.0001, 0.1),   # beta1
             (0,1e-8),# v0
-            *((0,5.0),)*degree_likelihood_object 
+            *((0,50.0),)*degree_likelihood_object 
         )
         n_starts: int =number_of_starts
         seed: int = 7
@@ -163,7 +163,7 @@ model_name=sequential_bayesian_sensing_model
 
 
 #select the model for likelihood function
-likelihood_object=SigmoidPolynomial(degree=4, coeff_min=0.1, coeff_max=1.0)
+likelihood_object=SigmoidPolynomial(degree=2, coeff_min=0.1, coeff_max=1.0)
 
 # standardization of features
 mean_scaler,std_scaler=normalized_feature_in_linear_regression(training_data_set,polynomial_order=1)
