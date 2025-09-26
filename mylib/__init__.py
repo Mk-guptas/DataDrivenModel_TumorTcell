@@ -5,6 +5,8 @@ from .package_import import *
 from.utility import least_square_fitting_algorithim,compute_covariance_and_correlation
 from.utility import least_square_fitting_algorithim_tuned_for_multistart, multistart_least_squares
 from .possible_likelihood_functions import SigmoidPolynomial
+from.lossfunctions import actual_validation_training_error,normalized_feature_in_linear_regression
+from.lossfunctions import prediction_error_combined
 
 
 __all__ = [
@@ -17,6 +19,9 @@ __all__ = [
     "least_square_fitting_algorithim_tuned_for_multistart",
     "multistart_least_squares",
     "SigmoidPolynomial",
+    "actual_validation_training_error",
+    "normalized_feature_in_linear_regression",
+    "prediction_error_combined",
 
     # settings / paths
     "path_mechanistic_tcell_tumor_data_for_fitting_BL",
