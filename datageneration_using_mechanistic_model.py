@@ -1,5 +1,5 @@
 
-from src.mylib import *
+from mylib import *
 
 
 if not os.path.exists(path_mechanistic_tcell_tumor_data_for_fitting_BL+'/'+str(datetime.date.today())):
@@ -31,7 +31,7 @@ def synthetic_data_generation(model_type,information_dict):
 
 
 
-information_dict={'initial_tumor_size_list': np.arange(25,700,25),'experimental_time': np.arange(0,2500,100),'params':{'k1':1e-5 ,'k3':8e-3,'k2':2e-3,'u0':5e-4,'d':0.006,'nhits':4},\
+information_dict={'initial_tumor_size_list': np.arange(25,700,25),'experimental_time': np.arange(0,2500,100),'params':{'k1':1e-5 ,'k3':8e-3,'k2':2e-3,'u0':5e-4,'d':0.006,'nhits':1},\
                   't':np.linspace(0,2900,2901)}
 
 
