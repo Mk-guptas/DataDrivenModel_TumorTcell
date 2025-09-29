@@ -34,7 +34,7 @@ mean_scaler,std_scaler=normalized_feature_in_linear_regression(training_data_set
 
 # reuglarization parameter
 lambdaaa=0.0
-number_of_starts=1
+number_of_starts=40
 
 # giving argument to fit the objective function
 residuals_func=prediction_error_combined
@@ -50,7 +50,7 @@ class Config:
     bounds: Tuple[Tuple[float, float], ...] = (
         (0.0001, 0.1),   # beta1
         (0,1e-8),# v0
-        *((0,90.0),)*degree_likelihood_object 
+        *((0,10.0),)*degree_likelihood_object 
     )
     n_starts: int =number_of_starts
     seed: int = 7
@@ -76,7 +76,6 @@ test_loss=actual_validation_training_error(p_best,training_data_set, experimenta
 print(f'actual test loss {test_loss}')
 
 
- 
 likelihood_object.update_coeffs(p_best[2:])
     
 # Now we will focus on how well we can idenitify the parameters

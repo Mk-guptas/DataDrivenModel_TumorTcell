@@ -54,8 +54,8 @@ class InteractionPolynomialSigmoid:
         
         # Build list of exponents (i, j) where i,j >=1
         # These vanish if x1=0 or x2=0
-        self.exponents = [(i, j) for i in range(1, degree+1)
-                                   for j in range(1, degree+1)]
+        self.exponents = [(i, j) for i in range(0, degree+1)
+                                   for j in range(0, degree+1)]
         
         
         # Initialize coefficients randomly positive
@@ -107,5 +107,5 @@ class InteractionPolynomialSigmoid:
 
 
 #ob1=InteractionPolynomialSigmoid(degree=2, seed=42)
-#ob1.update_coeffs([0.5, 0.5, 0.5, 0.5])
-##print(ob1.describe())
+#ob1.update_coeffs([0.5, 0.2, 0.1, 0.3, 0.4, 0.6, 0.7, 0.8, 0.9])
+#print(ob1.describe())

@@ -13,16 +13,16 @@ def vprint(verbose, *args, **kwargs):
     if verbose:
         print(*args, **kwargs)
 
+def sobol_starts(cfg):
+    eng = Sobol(d=cfg.dim, scramble=True, seed=cfg.seed)
+    u = eng.random(cfg.n_starts)
+    return scale01_to_bounds(u, cfg.bounds)
 
-def least_square_fitting_algorithim(residuals_func,p0,bounds,residual_argument):
+def scale01_to_bounds(u, bounds):
+    lo = np.array([b[0] for b in bounds], dtype=float)
+    hi = np.array([b[1] for b in bounds], dtype=float)
+    return lo + u * (hi - lo)
 
-    # 1. just get the parameter value and jacobian related to it
-    res_fit = least_squares(residuals_func,p0, args=residual_argument,bounds=bounds,tr_solver="lsmr",tr_options={"regularize": True})
-    print(res_fit.x)
-    # 2. Covariance, standard deviation, and correlation matrices
-    #cov_matrix, corr_matrix, std_dev,residual_var = compute_covariance_and_correlation(res_fit,  residuals_func,residual_argument)
-
-    return res_fit
 
 
 def compute_covariance_and_correlation(res_fit,residual_func,extra_argument):
@@ -75,6 +75,9 @@ def multistart_least_squares(residuals_func,residual_argument,cfg,n_jobs=4):
     return results[best_idx],results
 
 
+
+
+# not in use currently
 def multistart_least_squares_With_logger_option(residuals_func,residual_argument,cfg,n_jobs=4):
     starts = sobol_starts(cfg)
     bounds=([b[0] for b in cfg.bounds], [b[1] for b in cfg.bounds])
@@ -111,21 +114,6 @@ def multistart_least_squares_With_logger_option(residuals_func,residual_argument
     #print('best_resdiual_square',np.sum(results[best_idx].fun**2))
     
     return results['parameter'][best_idx],results
-
-
-
-
-def scale01_to_bounds(u, bounds):
-    lo = np.array([b[0] for b in bounds], dtype=float)
-    hi = np.array([b[1] for b in bounds], dtype=float)
-    return lo + u * (hi - lo)
-    
-
-def sobol_starts(cfg):
-    eng = Sobol(d=cfg.dim, scramble=True, seed=cfg.seed)
-    u = eng.random(cfg.n_starts)
-    return scale01_to_bounds(u, cfg.bounds)
-
 
 
 def training_test_split_principled_split_for_better_coverage(data,ratio):
