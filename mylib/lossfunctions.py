@@ -56,9 +56,7 @@ def prediction_error_combined(p0,training_data_set, experimental_time,t,model_na
 
         #residual[training_data_idx]=(predicted_tumor_1-training_data_value)/training_data_value[0]
         residual[training_data_idx]=(np.log(predicted_tumor_1+1e-5)-np.log(training_data_value+1e-5))
-    #weights= p0[1:].reshape(len(x),polynomial_order+1) ;sliced_weighs=weights[:,1:].flatten()
-    #weights= p0[1:].reshape(2,x_order+1) ;sliced_weighs=weights[:,1:].flatten()
-    #residual=np.concatenate(([lambdaaa*np.sum(sliced_weighs**2)],residual.flatten()))
+
 
     # detect if residual is finite
     bad = ~np.isfinite(residual.flatten())   # True where arr is NaN or Inf
@@ -79,7 +77,7 @@ def actual_validation_training_error(p0,training_data_set,experimental_time,t,mo
         data_set=test_data
     
     no_of_dataset=np.shape(data_set)[0]
-    residual=np.ones((no_of_dataset,len(experimental_time)))
+    residual=[]
     for data_idx, data_value in enumerate(data_set):
         params={'beta':p0[0] , 'v0':p0[1],\
                 'likelihood_function':likelihood_object,\
@@ -88,13 +86,13 @@ def actual_validation_training_error(p0,training_data_set,experimental_time,t,mo
                 'scaling':True,}
     
         # predicting curve based on the parameteer
-        y0_initial_1= np.exp(-5*x);
+        y0_initial_1= np.exp(-10*x);
         y0_initial_1=y0_initial_1/np.sum(y0_initial_1); #print('nomralization check', np.sum(y0_initial_1))
         y0_initial_1=np.concatenate((y0_initial_1, [data_value[0]]))
         
         predicted_data_1= scipy_odeint(model_name, y0_initial_1, t,args=(params,))
         predicted_tumor_1=predicted_data_1[experimental_time,-1]
-        residual[data_idx]=(predicted_tumor_1-data_value)
-        avg_loss=np.sum(residual**2)/no_of_dataset
+        residual.append(np.sum((predicted_tumor_1-data_value)**2))
+    avg_loss=np.average(residual)
 
     return avg_loss

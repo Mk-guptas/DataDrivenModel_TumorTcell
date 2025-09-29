@@ -34,7 +34,7 @@ mean_scaler,std_scaler=normalized_feature_in_linear_regression(training_data_set
 
 # reuglarization parameter
 lambdaaa=0.0
-number_of_starts=16
+number_of_starts=1
 
 # giving argument to fit the objective function
 residuals_func=prediction_error_combined
@@ -57,15 +57,15 @@ class Config:
 cfg = Config()
 
 ## using MULTI START local optimization using least square ###########
-best_res_fit,results_of_all=multistart_least_squares(residuals_func,residual_argument,cfg)
+best_res_fit,results_of_all=multistart_least_squares(residuals_func,residual_argument,cfg,n_jobs=number_of_starts)
 
 
 ## result and visualization
 p_best = best_res_fit.x
 best_ssq = np.sum(best_res_fit.fun**2)
 print(f'best ssq {best_ssq} for degree {likelihood_object.degree} and value of lambda {lambdaaa}')
-
-
+print("Best-fit parameters:", p_best);print("Sum of squared residuals:", best_ssq)
+print(f'total number parameter fitted {len(p_best)}')
 
 training_loss=actual_validation_training_error(p_best,training_data_set, experimental_time,t_eval,model_name,x,mu_x,\
                                                mean_scaler,std_scaler,likelihood_object,test_data=None,purpose='Training_loss')
@@ -76,11 +76,7 @@ test_loss=actual_validation_training_error(p_best,training_data_set, experimenta
 print(f'actual test loss {test_loss}')
 
 
-
-
-print("Best-fit parameters:", p_best);print("Sum of squared residuals:", best_ssq) 
-print(f'total number parameter fitted {len(p_best)}')
-
+ 
 likelihood_object.update_coeffs(p_best[2:])
     
 # Now we will focus on how well we can idenitify the parameters
@@ -89,7 +85,7 @@ likelihood_object.update_coeffs(p_best[2:])
 #print("Correlation matrix:\n", corr_matrix)
 
 
-# Below I want to visualize the same resulsts above in graph form
+# Below visualize the same resulsts above in graph form
 if True:    
 
     # Comparing the training plot after fittting
