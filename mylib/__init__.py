@@ -1,4 +1,4 @@
-from .bayesian_model import sequential_bayesian_sensing_model
+from .bayesian_model import sequential_bayesian_sensing_model, sequential_bayesian_sensing_model_classifier
 from .mechanistic_model import model2,test_model
 from .settings import path_mechanistic_tcell_tumor_data_for_fitting_BL
 from .package_import import *
@@ -7,7 +7,7 @@ from.utility import least_square_fitting_algorithim_tuned_for_multistart, multis
 from .possible_likelihood_functions import SigmoidPolynomial
 from.lossfunctions import actual_validation_training_error,normalized_feature_in_linear_regression
 from.lossfunctions import prediction_error_combined
-
+from .possible_likelihood_functions import InteractionPolynomialSigmoid
 
 __all__ = [
     # models
@@ -22,6 +22,8 @@ __all__ = [
     "actual_validation_training_error",
     "normalized_feature_in_linear_regression",
     "prediction_error_combined",
+    "InteractionPolynomialSigmoid",
+    "sequential_bayesian_sensing_model_classifier",
 
     # settings / paths
     "path_mechanistic_tcell_tumor_data_for_fitting_BL",

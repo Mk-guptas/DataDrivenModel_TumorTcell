@@ -16,6 +16,76 @@ tcell_population: T cell population (environmental variable)
 environmental_variable : to which the cells are responding (e.g., T cell density and tumor cell state population)
 likelihood function: it can be any function or neural net also
 '''
+
+
+def sequential_bayesian_sensing_model_classifier(P,t,params):
+
+ # system knowledge related parameter : depends on how we define the phenotype #####################################################
+    x=params.get('x',np.linspace(0,1,len(P)-1))  
+    mu_x=params.get('mu_x',None) 
+    tcell_population=params.get('tcell_population',None)
+
+    # parameter for assumed likelihood function and others : To be fitted
+    beta1=params.get('beta',None)              
+    v0=params.get('v0',0)                  
+   
+    # likelihood function
+    likelihood_function=params.get('likelihood_function',None)
+    
+    # sensed variable y : standardization parameters for environmental variable
+    mean_scaler=params.get('mean_scaler',None)
+    std_scaler=params.get('std_scaler',None)
+
+    tumorcell_density= (P[0]);
+    tcell_density= (tcell_population/(3*500));
+    likelihood_r=likelihood_function.evaluate(tumorcell_density,tcell_density)
+        
+
+
+    # Simulation begins (COupled differential equations)
+
+    drift_term=drift_computer(P,v0,da=x[1]-x[0])
+
+    dPdt=np.ones_like(P)
+    # Below is the standarad Bayesian model : based on the above information #################################
+    
+    # average properties
+
+    mean_proliferation_rate=np.sum(P[:-1]*mu_x)
+    
+    # this evolve the distirbution of phenotypes 
+
+    dPdt[0]=(beta1*(likelihood_r-P[0])      + (mu_x[0]-mean_proliferation_rate)*P[0]  +drift_term[0])*2900
+    
+
+    dPdt[-2]=(beta1*(1-likelihood_r-P[-2])   + (mu_x[-1]-mean_proliferation_rate)*P[-2]  + drift_term[-1])*2900
+    
+    # this is population growth dynamics: logistic
+    dPdt[-1] = (mean_proliferation_rate*(P[-1])*(1-P[-1]/500))*2900
+
+    
+
+    
+    # Detect if after the update porbablity is still normalized
+    if np.abs(np.sum(P[:-1])-1) >1e-1:
+        print(f'tot sum prob {np.sum(P[:-1]),P}')
+    if np.any(P[:-1] <0):
+        print(f'probab less than 0 {P}')
+    if np.any(P[:-1] > 1+1e-3):
+        print(f'probab more than 1 {P}')
+    if mean_proliferation_rate >1e-2:
+        print(f'mean prlif{mean_proliferation_rate}')
+    if P[-1] >1e3:
+        print(P[-1])
+    if not np.all(np.isfinite(P)):
+        print(f"[RHS] non-finite state at t={t}: {P}")
+
+    if not np.all(np.isfinite(P)):
+        print(f"[RHS] non-finite state at t={t}: {P}")
+
+
+    return dPdt
+
 def sequential_bayesian_sensing_model(P,t,params):
 
     # system knowledge related parameter : depends on how we define the phenotype #####################################################
@@ -41,10 +111,13 @@ def sequential_bayesian_sensing_model(P,t,params):
 
     likelihood_r=np.empty(len(x)-1,);
     for idx in range(len(x)-1):
+        tumorcell_density= (P[-1]/500);
+        tcell_density= (tcell_population/(3*500));
         env_var11= (((q[idx]*P[-1])/500)*(tcell_population/(3*500)));
         #assert env_var11<=1 and env_var12<=1 and env_var21, f'density more than 1'
 
-        likelihood_r[idx]=max(likelihood_function.evaluate(env_var11),1e-1)
+        #likelihood_r[idx]=max(likelihood_function.evaluate(env_var11),1e-1)
+        likelihood_r[idx]=max(likelihood_function.evaluate(tumorcell_density,tcell_density),1e-1)
         
 
     assert ((likelihood_r >= 0) & (likelihood_r <= 1)).all(), "likelihood_r must be in [0.1, 1]"

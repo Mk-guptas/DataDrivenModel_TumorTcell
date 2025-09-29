@@ -1,5 +1,6 @@
 import random
 import math
+import numpy as np
 
 class SigmoidPolynomial:
     def __init__(self, degree, coeff_min=0.1, coeff_max=1.0):
@@ -43,3 +44,68 @@ class SigmoidPolynomial:
 
 #ob=SigmoidPolynomial(degree=2, coeff_min=0.1, coeff_max=1.0)
 #print(ob.degree)
+
+
+
+class InteractionPolynomialSigmoid:
+    def __init__(self, degree=2, seed=None):
+        self.degree = degree
+        self.rng = np.random.default_rng(seed)
+        
+        # Build list of exponents (i, j) where i,j >=1
+        # These vanish if x1=0 or x2=0
+        self.exponents = [(i, j) for i in range(1, degree+1)
+                                   for j in range(1, degree+1)]
+        
+        
+        # Initialize coefficients randomly positive
+        self.coeffs = np.abs(self.rng.normal(loc=1.0, scale=0.5, size=len(self.exponents)))
+    
+    def update_coeffs(self, new_coeffs):
+        """
+        Update coefficients manually.
+        new_coeffs : array-like
+            Must match number of terms.
+        """
+        new_coeffs = np.array(new_coeffs, dtype=float)
+        if new_coeffs.shape[0] != len(self.coeffs[:]):
+            raise ValueError(f"Expected {len(self.coeffs)} coefficients, got {len(new_coeffs)}")
+        self.coeffs[:] = new_coeffs
+
+    def polynomial(self, x1, x2):
+        """
+        Evaluate polynomial part z(x1, x2).
+        """
+        z = 0.0
+        for (coef, (i, j)) in zip(self.coeffs, self.exponents):
+            z += coef * (x1**i) * (x2**j)
+        return z
+    
+    def evaluate(self, x1, x2):
+        """
+        Evaluate sigmoid(s(z(x1, x2))).
+        """
+        z = self.polynomial(x1, x2)
+        return 2.0 / (1.0 + np.exp(z))
+    
+    def num_terms(self):
+        return len(self.exponents)
+    
+    def describe(self):
+        """
+        Print polynomial structure.
+        """
+        terms = []
+        for coef, (i, j) in zip(self.coeffs, self.exponents):
+            if (i, j) == (0,0):
+                terms.append(f"{coef:.3f}")
+            else:
+                terms.append(f"{coef:.3f} * x1^{i} * x2^{j}")
+        return " + ".join(terms)
+
+
+
+
+#ob1=InteractionPolynomialSigmoid(degree=2, seed=42)
+#ob1.update_coeffs([0.5, 0.5, 0.5, 0.5])
+##print(ob1.describe())

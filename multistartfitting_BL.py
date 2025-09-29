@@ -22,11 +22,11 @@ print(f'training data set {training_data_set.shape} and validation data set {val
 x= np.linspace(0,1,2); mu_x= np.asarray([0.0005,-0.006])
 #x=np.asarray([0.,0.5,1]);mu_x=np.asarray([0.0005,0,-0.006])
 t_eval = np.linspace(0, 1, 2901)  # Time points for simulation
-model_name=sequential_bayesian_sensing_model
-
+model_name=sequential_bayesian_sensing_model_classifier
 
 #select the model for likelihood function
-likelihood_object=SigmoidPolynomial(degree=2, coeff_min=0.1, coeff_max=1.0)
+#likelihood_object=SigmoidPolynomial(degree=2, coeff_min=0.1, coeff_max=1.0)
+likelihood_object=InteractionPolynomialSigmoid(degree=2, seed=42)
 
 # standardization of features
 mean_scaler,std_scaler=normalized_feature_in_linear_regression(training_data_set,polynomial_order=1)
@@ -34,7 +34,7 @@ mean_scaler,std_scaler=normalized_feature_in_linear_regression(training_data_set
 
 # reuglarization parameter
 lambdaaa=0.0
-number_of_starts=40
+number_of_starts=16
 
 # giving argument to fit the objective function
 residuals_func=prediction_error_combined
@@ -42,14 +42,15 @@ residual_argument=(training_data_set, experimental_time,t_eval, model_name,x,mu_
 
 # CONSTRAIN ON THE PARAMETERS
 # ----- Config -----
-degree_likelihood_object= likelihood_object.degree
+degree_likelihood_object= likelihood_object.num_terms() # minus one because we do not fit the baseline constant term
+print(f'number of terms in likelihood function {degree_likelihood_object}')
 @dataclass
 class Config:
     dim: int =2+degree_likelihood_object
     bounds: Tuple[Tuple[float, float], ...] = (
         (0.0001, 0.1),   # beta1
         (0,1e-8),# v0
-        *((0,50.0),)*degree_likelihood_object 
+        *((0,90.0),)*degree_likelihood_object 
     )
     n_starts: int =number_of_starts
     seed: int = 7
@@ -64,11 +65,6 @@ p_best = best_res_fit.x
 best_ssq = np.sum(best_res_fit.fun**2)
 print(f'best ssq {best_ssq} for degree {likelihood_object.degree} and value of lambda {lambdaaa}')
 
-#cov_matrix, corr_matrix, std_dev,residual_variance=compute_covariance_and_correlation(best_res_fit,residuals_func,residual_argument)
-#print(f'standarad deviation {std_dev}')
-
-
-print(f'best ssq {best_ssq} for degree {likelihood_object.degree}')
 
 
 training_loss=actual_validation_training_error(p_best,training_data_set, experimental_time,t_eval,model_name,x,mu_x,\
@@ -80,19 +76,18 @@ test_loss=actual_validation_training_error(p_best,training_data_set, experimenta
 print(f'actual test loss {test_loss}')
 
 
-    
+
 
 print("Best-fit parameters:", p_best);print("Sum of squared residuals:", best_ssq) 
 print(f'total number parameter fitted {len(p_best)}')
-        
+
+likelihood_object.update_coeffs(p_best[2:])
+    
 # Now we will focus on how well we can idenitify the parameters
 #cov_matrix, corr_matrix, std_dev,residual_var = compute_covariance_and_correlation(res_fit,  residuals_func,residual_argument)
 #print("Standard deviations:", std_dev)
 #print("Correlation matrix:\n", corr_matrix)
 
-
-with open (path_mechanistic_tcell_tumor_data_for_fitting_BL+'/p_best_with_poly_order_'+str(1)+'.pkl','wb') as f:
-    pkl.dump(p_best,f)
 
 # Below I want to visualize the same resulsts above in graph form
 if True:    
@@ -102,7 +97,7 @@ if True:
     
     for data_idx, data_set in enumerate(training_data_set):
         
-        params={'beta':best_res_fit.x[0] ,'v0':best_res_fit.x[1] ,'regression_params':best_res_fit.x[2:],\
+        params={'beta':best_res_fit.x[0] ,'v0':best_res_fit.x[1],\
                 'likelihood_function':likelihood_object,\
                 'mean_scaler':mean_scaler,'std_scaler':std_scaler,\
                 'x':x ,'mu_x': mu_x,'tcell_population':data_set[0]*3,'scaling':True,}
@@ -125,7 +120,7 @@ if True:
     # checking the predcition on new data set
     for data_idx, data_set in enumerate(validation_data_set):
     
-        params={'beta':best_res_fit.x[0] , 'v0':best_res_fit.x[1] ,'regression_params':best_res_fit.x[2:],\
+        params={'beta':best_res_fit.x[0] , 'v0':best_res_fit.x[1] ,\
                 'likelihood_function':likelihood_object,\
                 'mean_scaler':mean_scaler,'std_scaler':std_scaler,\
                 'x':x ,'mu_x': mu_x,'tcell_population':data_set[0]*3,\
